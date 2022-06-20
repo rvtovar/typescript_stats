@@ -1,6 +1,10 @@
-import { MatchReader } from './composition/MatchReader';
-import { CsvFileReader } from './composition/CsvFileReader';
-import { MatchResult } from './MatchResult';
+import { MatchReader } from './MatchReader';
+import { CsvFileReader } from './CsvFileReader';
+import { Summary } from './Summary';
+import { WinsAnalysis } from './analyzers/WinsAnalysis';
+import { ConsoleReport } from './reportTargets/ConsoleReport';
+import { HtmlReport } from './reportTargets/HtmlReport';
+import { read } from 'fs';
 
 // Create an object that satifies the dataReader interface
 const csvFileReader = new CsvFileReader('football.csv');
@@ -9,15 +13,12 @@ const reader = new MatchReader(csvFileReader);
 reader.load();
 // refactor to Enum
 
-let manUnitedWins = 0;
+let summary = new Summary(new WinsAnalysis('Man United'), new ConsoleReport());
 
-for (let match of reader.matches) {
-  if (match[1] == 'Man United' && match[5] == MatchResult.HomeWin) {
-    manUnitedWins++;
-  } else if (match[2] == 'Man United' && match[5] == MatchResult.AwayWin) {
-    manUnitedWins++;
-  }
-}
-console.log(`
-    Man United won ${manUnitedWins} games
-`);
+summary.buildAndPrintReport(reader.matches);
+
+let newSummary = new Summary(
+  new WinsAnalysis('Man United'),
+  new HtmlReport('report.html')
+);
+newSummary.buildAndPrintReport(reader.matches);
